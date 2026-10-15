@@ -1,0 +1,1 @@
+-- Add application database schema here.

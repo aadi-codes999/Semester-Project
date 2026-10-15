@@ -1,0 +1,7 @@
+Flask
+Flask-Cors
+python-dotenv
+SQLAlchemy
+GeoAlchemy2
+Shapely
+pytest

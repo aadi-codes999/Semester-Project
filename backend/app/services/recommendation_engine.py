@@ -1,0 +1,1 @@
+"""Generate land use recommendations."""

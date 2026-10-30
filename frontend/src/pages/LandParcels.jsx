@@ -3,9 +3,14 @@ import { Link, useOutletContext } from "react-router-dom";
 import { ArrowUpRight, MapPinned } from "lucide-react";
 
 export default function LandParcels() {
-  const { parcels, search, villages, selectedVillage } = useOutletContext();
+  const { parcels, search, villages, selectedVillage, apiEnabled, apiError, apiLoading } = useOutletContext();
   const [statusFilter, setStatusFilter] = useState("all");
   const village = villages.find((item) => item.id === selectedVillage);
+  const dataSource = apiLoading
+    ? "CONNECTING TO API..."
+    : apiEnabled && !apiError
+      ? "API DATA"
+      : "DEMONSTRATION DATA";
   const visibleParcels = useMemo(() => parcels.filter((parcel) => (
     parcel.id.toLowerCase().includes(search.trim().toLowerCase()) &&
     (statusFilter === "all" || parcel.status === statusFilter)
@@ -19,7 +24,7 @@ export default function LandParcels() {
           <h2>Land parcels</h2>
           <p>Review parcel observations and preliminary assessment status.</p>
         </div>
-        <span className="sample-badge"><span className="sample-dot" /> DEMONSTRATION DATA</span>
+        <span className="sample-badge"><span className="sample-dot" /> {dataSource}</span>
       </div>
       <section className="generic-card">
         <div className="data-toolbar">
@@ -35,19 +40,62 @@ export default function LandParcels() {
             </select>
           </label>
         </div>
-        <div className="table-scroll"><table><thead><tr><th>Parcel ID</th><th>Area</th><th>Land cover</th><th>Assessment</th><th>Verification</th><th>Suggested use</th><th /></tr></thead>
-          <tbody>
-            {visibleParcels.map((parcel) => (
-              <tr key={parcel.id}>
-                <td className="parcel-id-cell">{parcel.id}</td><td>{parcel.area} ac</td><td>{parcel.cover}</td>
-                <td><span className={`status-pill status-pill--${parcel.status}`}>{parcel.statusLabel}</span></td>
-                <td>{parcel.verification}</td><td>{parcel.suggestedUse ?? "Not available"}</td>
-                <td><Link className="table-link" to={`/parcels/${encodeURIComponent(parcel.id)}`} aria-label={`View ${parcel.id}`}><ArrowUpRight size={14} /></Link></td>
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Parcel ID</th>
+                <th>Khasra No</th>
+                <th>Area</th>
+                <th>Cover & NDVI</th>
+                <th>Assessment</th>
+                <th>Legal Tenure</th>
+                <th>Suggested Use</th>
+                <th />
               </tr>
-            ))}
-            {!visibleParcels.length && <tr><td colSpan="7" className="table-empty">No parcels match the current search and filters.</td></tr>}
-          </tbody>
-        </table></div>
+            </thead>
+            <tbody>
+              {visibleParcels.map((parcel) => (
+                <tr key={parcel.id}>
+                  <td className="parcel-id-cell"><strong>{parcel.id}</strong></td>
+                  <td>{parcel.khasraNo || "—"}</td>
+                  <td>{parcel.area} ac</td>
+                  <td>
+                    {parcel.cover}
+                    {parcel.ndvi !== undefined && (
+                      <span style={{ fontSize: "0.75rem", color: "#64748b", display: "block" }}>
+                        NDVI {Number(parcel.ndvi).toFixed(2)}
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    <span className={`status-pill status-pill--${parcel.status}`}>
+                      {parcel.statusLabel || parcel.status}
+                    </span>
+                  </td>
+                  <td>
+                    <span style={{ fontSize: "0.78rem", color: parcel.isLegallyVerified ? "#15803d" : "#b45309", fontWeight: 500 }}>
+                      {parcel.isLegallyVerified ? "Govt Verified Available" : "Unverified / Private"}
+                    </span>
+                  </td>
+                  <td><strong>{parcel.suggestedUse ?? "Assessing"}</strong></td>
+                  <td>
+                    <Link className="table-link" to={`/parcels/${encodeURIComponent(parcel.id)}`} aria-label={`View ${parcel.id}`}>
+                      <ArrowUpRight size={14} />
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+              {!visibleParcels.length && (
+                <tr>
+                  <td colSpan="8" className="table-empty">
+                    No parcels match the current search and filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
   );

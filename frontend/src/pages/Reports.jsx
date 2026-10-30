@@ -4,8 +4,9 @@ import { getReports } from "../services/reportService";
 
 const API_ENABLED = import.meta.env.VITE_USE_API !== "false";
 const fallbackReports = [
-  { id: "report-001", title: "Village land suitability snapshot", type: "Summary report", generatedAt: "2026-10-14", status: "Ready", summary: "Preliminary land suitability review for the current village portfolio." },
-  { id: "report-002", title: "Water access and drainage review", type: "Environmental review", generatedAt: "2026-10-12", status: "Draft", summary: "Seasonal water patterns and drainage suitability for candidate parcels." },
+  { id: "report-001", title: "Baloda Bazar District Land Suitability Snapshot", type: "District Assessment", generatedAt: "2026-10-24", status: "Ready", summary: "Satellite NDVI and terrain analysis across Baloda Bazar district (DILRMP Code 674), identifying candidate uncultivated wastelands." },
+  { id: "report-002", title: "Mahanadi & Sheonath River Catchment Drainage Review", type: "Environmental & Hydrology", generatedAt: "2026-10-20", status: "Ready", summary: "Drainage buffers and seasonal flood risk assessment for candidate solar and agroforestry parcels near Simga and Kasdol blocks." },
+  { id: "report-003", title: "Chhattisgarh BhuNaksha Cadastral Availability Reconciliation", type: "Legal & Revenue Audit", generatedAt: "2026-10-18", status: "Ready", summary: "Distinguishing biophysically potentially unused scrub from legally verified Government Nazul/Gothan commons vs private fallow land." },
 ];
 
 export default function Reports() {

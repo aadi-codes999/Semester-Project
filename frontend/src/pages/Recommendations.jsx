@@ -6,10 +6,11 @@ import { getRecommendations } from "../services/recommendationService";
 const API_ENABLED = import.meta.env.VITE_USE_API !== "false";
 
 const fallbackSummaries = {
-  Agriculture: "Observed open or fallow cover; soil and ownership checks are still required.",
-  Plantation: "Vegetation pattern may support tree cover after water and soil validation.",
-  "Rainwater harvesting": "Review local drainage and seasonal water flow before planning.",
-  "Community facilities": "Consider only after access, ownership, and community consultation.",
+  "Solar Energy": "Flat topography (<2.5° slope) and high solar irradiance (5.42 kWh/m²/day) on uncultivated wasteland indicate excellent ground-mounted solar PV potential.",
+  Agriculture: "Fertile Kanhar/Dorsa black soil and gentle slope support high agricultural productivity with planned irrigation.",
+  Agroforestry: "Undulating terrain and scrub cover are optimal for drought-hardy silviculture, fruit tree planting, and community commons.",
+  "Rainwater harvesting": "Review local drainage buffers and seasonal water flow before planning.",
+  "Community facilities": "Consider only after access, ownership, and Gram Panchayat consultation.",
 };
 
 export default function Recommendations() {

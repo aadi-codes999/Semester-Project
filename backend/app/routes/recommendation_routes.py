@@ -1,33 +1,29 @@
-"""Recommendation endpoints."""
+"""Recommendation endpoints backed by MongoDB."""
 
 from flask import Blueprint, jsonify, request
-from sqlalchemy import select
+from pymongo import ASCENDING
 
-from app.database.db import get_session
-from app.models.land_parcel import LandParcel
-from app.models.recommendation import Recommendation
-
+from app.database.mongo import clean_doc, clean_docs, get_db
 
 recommendation_bp = Blueprint("recommendations", __name__)
 
 
 @recommendation_bp.route("/recommendations", methods=["GET"])
 def list_recommendations():
+    db = get_db()
+    filter_query = {}
     village_id = request.args.get("village_id")
-    with get_session() as session:
-        query = select(Recommendation).order_by(Recommendation.id)
-        if village_id:
-            query = query.join(LandParcel, LandParcel.id == Recommendation.parcel_id).where(
-                LandParcel.village_id == village_id
-            )
-        return jsonify([item.to_dict() for item in session.scalars(query)])
+    if village_id:
+        filter_query["villageId"] = village_id
+
+    cursor = db.recommendations.find(filter_query).sort("id", ASCENDING)
+    return jsonify(clean_docs(cursor))
 
 
 @recommendation_bp.route("/recommendations/<parcel_id>", methods=["GET"])
 def parcel_recommendations(parcel_id):
-    with get_session() as session:
-        query = select(Recommendation).where(Recommendation.parcel_id == parcel_id)
-        recommendation = session.scalars(query).first()
-        if recommendation is None:
-            return jsonify({"message": "Recommendation not found"}), 404
-        return jsonify(recommendation.to_dict())
+    db = get_db()
+    recommendation = db.recommendations.find_one({"parcelId": parcel_id})
+    if recommendation is None:
+        return jsonify({"message": "Recommendation not found"}), 404
+    return jsonify(clean_doc(recommendation))

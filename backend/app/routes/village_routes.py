@@ -1,19 +1,20 @@
-"""Village endpoints."""
+"""Village endpoints backed by MongoDB."""
 
 from flask import Blueprint, jsonify, request
-from sqlalchemy import select
+from pymongo import ASCENDING
 
-from app.database.db import get_session
-from app.models.village import Village
-
+from app.database.mongo import clean_docs, get_db
 
 village_bp = Blueprint("villages", __name__)
 
 
 @village_bp.route("/villages", methods=["GET"])
 def list_villages():
-    with get_session() as session:
-        query = select(Village).order_by(Village.name)
-        if request.args.get("village_id"):
-            query = query.where(Village.id == request.args["village_id"])
-        return jsonify([village.to_dict() for village in session.scalars(query)])
+    db = get_db()
+    filter_query = {}
+    village_id = request.args.get("village_id")
+    if village_id:
+        filter_query["id"] = village_id
+
+    cursor = db.villages.find(filter_query).sort("name", ASCENDING)
+    return jsonify(clean_docs(cursor))

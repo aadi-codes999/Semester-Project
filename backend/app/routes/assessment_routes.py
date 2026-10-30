@@ -1,40 +1,29 @@
-"""Land assessment endpoints."""
+"""Land assessment endpoints backed by MongoDB."""
 
 from flask import Blueprint, jsonify, request
-from sqlalchemy import select
+from pymongo import ASCENDING
 
-from app.database.db import get_session
-from app.models.assessment import Assessment
-from app.models.land_parcel import LandParcel
-
+from app.database.mongo import clean_doc, clean_docs, get_db
 
 assessment_bp = Blueprint("assessments", __name__)
 
 
 @assessment_bp.route("/assessments", methods=["GET"])
 def list_assessments():
+    db = get_db()
+    filter_query = {}
     village_id = request.args.get("village_id")
-    with get_session() as session:
-        query = (
-            select(Assessment, LandParcel.village_id)
-            .join(LandParcel, LandParcel.id == Assessment.parcel_id)
-            .order_by(Assessment.parcel_id)
-        )
-        if village_id:
-            query = query.where(LandParcel.village_id == village_id)
-        results = session.execute(query)
-        return jsonify([assessment.to_dict(village_id) for assessment, village_id in results])
+    if village_id:
+        filter_query["villageId"] = village_id
+
+    cursor = db.assessments.find(filter_query).sort("parcelId", ASCENDING)
+    return jsonify(clean_docs(cursor))
 
 
 @assessment_bp.route("/assessments/<parcel_id>", methods=["GET"])
 def parcel_assessment(parcel_id):
-    with get_session() as session:
-        result = session.execute(
-            select(Assessment, LandParcel.village_id)
-            .join(LandParcel, LandParcel.id == Assessment.parcel_id)
-            .where(Assessment.parcel_id == parcel_id)
-        ).first()
-        if result is None:
-            return jsonify({"message": "Assessment not found"}), 404
-        assessment, village_id = result
-        return jsonify(assessment.to_dict(village_id))
+    db = get_db()
+    assessment = db.assessments.find_one({"parcelId": parcel_id})
+    if assessment is None:
+        return jsonify({"message": "Assessment not found"}), 404
+    return jsonify(clean_doc(assessment))

@@ -1,7 +1,8 @@
 Flask
 Flask-Cors
 python-dotenv
-SQLAlchemy
-GeoAlchemy2
+pymongo
 Shapely
 pytest
+requests
+scikit-learn

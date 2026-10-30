@@ -1,17 +1,15 @@
-"""Report endpoints."""
+"""Report endpoints backed by MongoDB."""
 
 from flask import Blueprint, jsonify
-from sqlalchemy import select
+from pymongo import DESCENDING
 
-from app.database.db import get_session
-from app.models.report import Report
-
+from app.database.mongo import clean_docs, get_db
 
 report_bp = Blueprint("reports", __name__)
 
 
 @report_bp.route("/reports", methods=["GET"])
 def list_reports():
-    with get_session() as session:
-        query = select(Report).order_by(Report.generated_at.desc(), Report.id)
-        return jsonify([report.to_dict() for report in session.scalars(query)])
+    db = get_db()
+    cursor = db.reports.find({}).sort("generatedAt", DESCENDING)
+    return jsonify(clean_docs(cursor))

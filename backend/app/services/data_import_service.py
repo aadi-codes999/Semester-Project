@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+import re
 
 DATA_RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
 DATA_PROCESSED_DIR = Path(__file__).resolve().parents[2] / "data" / "processed"
@@ -120,7 +121,10 @@ def import_custom_geojson(geojson_data: dict, dataset_name: str = "custom_import
     if not features:
         return {"status": "error", "message": "No GeoJSON features found in provided payload."}
 
-    dest_file = DATA_RAW_DIR / f"{dataset_name}.geojson"
+    safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", dataset_name).strip("._")
+    if not safe_name:
+        return {"status": "error", "message": "Dataset name must contain letters or numbers."}
+    dest_file = DATA_RAW_DIR / f"{safe_name}.geojson"
     with open(dest_file, "w", encoding="utf-8") as f:
         json.dump(geojson_data, f, indent=2)
 
@@ -128,5 +132,5 @@ def import_custom_geojson(geojson_data: dict, dataset_name: str = "custom_import
         "status": "success",
         "message": f"Successfully imported {len(features)} spatial features into {dest_file.name}",
         "feature_count": len(features),
-        "dataset_name": dataset_name,
+        "dataset_name": safe_name,
     }

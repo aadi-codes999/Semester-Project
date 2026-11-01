@@ -61,7 +61,7 @@ export default function Login() {
           <LogIn size={15} />
           {submitting ? "Signing in..." : "Sign in"}
         </button>
-        <p className="login-hint">Development login accepts any email and password when the Flask API is running.</p>
+        <p className="login-hint">Use the configured account for this environment. The demo account is prefilled.</p>
       </form>
     </main>
   );

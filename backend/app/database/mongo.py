@@ -22,7 +22,25 @@ def get_mongo_client(uri=None):
     global _mongo_client
     if _mongo_client is None:
         target_uri = uri or os.getenv("MONGO_URI", "mongodb://localhost:27017")
-        _mongo_client = MongoClient(target_uri, serverSelectionTimeoutMS=4000)
+        try:
+            config = current_app.config
+        except RuntimeError:
+            config = {}
+        _mongo_client = MongoClient(
+            target_uri,
+            serverSelectionTimeoutMS=int(config.get(
+                "MONGO_SERVER_SELECTION_TIMEOUT_MS",
+                os.getenv("MONGO_SERVER_SELECTION_TIMEOUT_MS", "4000"),
+            )),
+            connectTimeoutMS=int(config.get(
+                "MONGO_CONNECT_TIMEOUT_MS",
+                os.getenv("MONGO_CONNECT_TIMEOUT_MS", "2000"),
+            )),
+            socketTimeoutMS=int(config.get(
+                "MONGO_SOCKET_TIMEOUT_MS",
+                os.getenv("MONGO_SOCKET_TIMEOUT_MS", "5000"),
+            )),
+        )
     return _mongo_client
 
 
